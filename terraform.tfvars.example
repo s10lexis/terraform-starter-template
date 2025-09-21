@@ -1,0 +1,10 @@
+aws_region          = "us-east-1"
+create_example      = false
+example_bucket_name = "example-unique-bucket-name"
+
+# tags = {
+#   Project   = "terraform-starter"
+#   Owner     = "you@example.com"
+#   Env       = "dev"
+#   ManagedBy = "terraform"
+# }

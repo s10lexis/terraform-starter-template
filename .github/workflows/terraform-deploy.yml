@@ -1,0 +1,49 @@
+name: Terraform Deploy (manual, OIDC)
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply:
+        description: "Type 'yes' to apply"
+        required: true
+        default: "no"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.apply == 'yes' }}
+    permissions:
+      id-token: write
+      contents: read
+
+    env:
+      TF_IN_AUTOMATION: true
+      TF_BACKEND_BUCKET: ${{ secrets.TF_BACKEND_BUCKET }}
+      TF_BACKEND_KEY: ${{ secrets.TF_BACKEND_KEY }}
+      TF_BACKEND_REGION: ${{ secrets.TF_BACKEND_REGION }}
+      TF_BACKEND_DDB_TABLE: ${{ secrets.TF_BACKEND_DDB_TABLE }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::579989519757:role/GitHubTerraformRole
+          aws-region: us-east-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.5
+
+      - name: Terraform Init (remote backend via secrets)
+        run: |
+          terraform init             -backend-config="bucket=${ '{' } env.TF_BACKEND_BUCKET { '}' }"             -backend-config="key=${ '{' } env.TF_BACKEND_KEY { '}' }"             -backend-config="region=${ '{' } env.TF_BACKEND_REGION { '}' }"             -backend-config="dynamodb_table=${ '{' } env.TF_BACKEND_DDB_TABLE { '}' }"
+
+      - name: Terraform Plan
+        run: terraform plan -input=false -no-color -out=tfplan
+
+      - name: Terraform Apply
+        run: terraform apply -input=false -auto-approve tfplan
