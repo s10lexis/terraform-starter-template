@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "tags" {
   description = "Common tags to apply to supported resources"
   type        = map(string)
-  default     = {
+  default = {
     Project   = "terraform-starter"
     ManagedBy = "terraform"
   }
