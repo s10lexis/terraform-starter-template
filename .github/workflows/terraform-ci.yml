@@ -39,12 +39,16 @@ jobs:
         run: terraform fmt -check -recursive
 
       - name: Terraform Init (remote backend via secrets)
-      - name: Terraform Init (remote backend via secrets)
-      run: |
-        terraform init \
-          -backend-config="bucket=$TF_BACKEND_BUCKET" \
-          -backend-config="key=$TF_BACKEND_KEY" \
-          -backend-config="region=$TF_BACKEND_REGION" \
-          -backend-config="dynamodb_table=$TF_BACKEND_DDB_TABLE"
+        run: |
+          terraform init \
+            -backend-config="bucket=$TF_BACKEND_BUCKET" \
+            -backend-config="key=$TF_BACKEND_KEY" \
+            -backend-config="region=$TF_BACKEND_REGION" \
+            -backend-config="dynamodb_table=$TF_BACKEND_DDB_TABLE"
+
       - name: Terraform Validate
         run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan -input=false -no-color -out=tfplan
+
